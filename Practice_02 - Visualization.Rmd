@@ -1,0 +1,151 @@
+---
+title: "Practice_02: Visualization"
+author: "Andy Chiv"
+date: '2022-09-23'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.height=4, fig.width=6)
+```
+
+```{r libraries}
+library(tidyverse)
+library(ggplot2)
+```
+
+
+```{r}
+college = read_csv('colleges_clean.csv')
+
+# Update CONTROL and REGION to Character Values
+college <- college %>% 
+  mutate( CONTROL = factor(CONTROL), 
+          REGION = factor(REGION))
+```
+
+
+### 1. How many private and public schools are there in your data?
+
+```{r}
+college %>% 
+  ggplot(aes(x=CONTROL, fill=CONTROL))+
+  geom_bar()
+```
+
+The bar plot shows that there are 511 public schools and 799 private schools.
+
+### 2. What is the overall average SAT Score?
+
+```{r}
+college %>% 
+  ggplot(aes(x=SAT_AVG))+
+  geom_density(fill="#69b3a2") +
+  geom_vline(aes(xintercept = mean(SAT_AVG)),col='blue',size=1)
+```
+
+The overall average SAT score is 1131.309 points.
+
+### 3. What is the average SAT score for Private and Public schools?
+
+```{r}
+college %>% 
+  ggplot(aes(x=SAT_AVG))+
+  geom_density(fill="#69b3a2") + 
+  facet_wrap(~CONTROL) +
+  geom_vline(aes(xintercept = mean(SAT_AVG)),col='blue',size=1)
+```
+
+ - Average SAT score for Pivate schools is 1115.284 points.
+ - Average SAT score for Public schools is 1141.558 points.
+
+### 4. Which school has the largest difference betweeen In- and Out-of-State tuition?
+
+
+```{r}
+college %>%
+  arrange(desc(TUITION_DIFF)) %>% 
+  slice(1:3) %>% 
+  ggplot(aes(x=INSTNM, y=TUITION_DIFF, fill=INSTNM))+
+  geom_col()
+```
+The University of Michigan-Ann Arbor has the largest difference between in-state tuition and out-of-state tuition. 
+
+### 5. Are “better” schools more expensive?
+
+Assuming "Better" Schools refer the average SAT scores when the university accept the students, we can check if there is any relationship between the average SAT score for each school and the in-state tuition. 
+
+```{r}
+college %>% 
+  ggplot(aes(x=SAT_AVG, y=TUITIONFEE_IN, color = CONTROL)) +
+  geom_point()
+```
+
+Based on the scatter plot, it appears that the in-state tuition for private schools become more expensive as the average SAT score gets higher. However, we are seeing a trend that in-state tuition for public university does not increase as the average SAT score gets higher. 
+
+### 6. Which states tend to have the “best deals” of colleges?
+
+```{r}
+# In state tuition
+college %>% 
+  group_by(STABBR) %>% 
+  summarise(average_in_state = mean(TUITIONFEE_IN)) %>%
+  arrange(average_in_state) %>%
+  slice(1:5) %>%
+  ggplot(aes(x=STABBR, y=average_in_state, fill=STABBR )) +
+  geom_col()
+```
+
+```{r}
+# Out of State Tuition
+college %>% 
+  group_by(STABBR) %>% 
+  summarise(average_in_state = mean(TUITIONFEE_OUT)) %>%
+  arrange(average_in_state) %>%
+  slice(1:5) %>%
+  ggplot(aes(x=STABBR, y=average_in_state, fill=STABBR )) +
+  geom_col()
+
+```
+Puerto Rico has the best in-state and out-of-state tuition deals of college. 
+
+
+### 7. Do different regions have different public and private school distributions?
+```{r}
+college %>% 
+  ggplot(aes(x=REGION, fill=CONTROL))+
+  geom_bar(position='fill')
+  
+```
+Different regions have different public and private school distribitions. Note that Region 0 and 9 only have public schools.
+
+### 8. How does the size of the school relate to the cost, correcting for public versus private status?
+```{r}
+college %>% 
+  ggplot(aes(x=UGDS, y=TUITIONFEE_IN, color = CONTROL)) +
+  geom_point()
+```
+
+- Based on the scatter plot, as the number of students increase, the cost remains relatively similar for public university. 
+- However, there is a strong position relationship between the number of students and costs for private university.
+
+
+### Replicate the plot below: 
+```{r}
+college %>% 
+  ggplot(aes(x=REGION, y=ADM_RATE, fill=CONTROL)) +
+  geom_boxplot()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
